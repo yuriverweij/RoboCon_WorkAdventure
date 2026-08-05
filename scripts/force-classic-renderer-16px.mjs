@@ -8,6 +8,8 @@ const GID_MASK = 0x1fffffff;
 const FLIP_MASK = 0xe0000000;
 const FALLBACK_TILESET_NAME = "16px classic renderer compatibility";
 const GPU_REPRO_MAP_NAME = "shuttlebay-gpu-repro.tmj";
+const BACKGROUND_CLASSIC_REPRO_MAP_NAME = "shuttlebay-bg-classic-fg-gpu.tmj";
+const FOREGROUND_CLASSIC_REPRO_MAP_NAME = "shuttlebay-bg-gpu-fg-classic.tmj";
 
 async function findMaps(directory) {
     const maps = [];
@@ -22,7 +24,22 @@ async function findMaps(directory) {
     return maps;
 }
 
-async function emitGpuReproMap(outputDirectory, maps) {
+function getDepthLayerNames(map) {
+    const background = new Set();
+    const foreground = new Set();
+    let target = background;
+
+    for (const layer of map.layers ?? []) {
+        if (layer.type === "objectgroup" && layer.name === "floorLayer") {
+            target = foreground;
+        } else if (layer.type === "tilelayer") {
+            target.add(layer.name);
+        }
+    }
+    return { background, foreground };
+}
+
+async function emitGpuReproMaps(outputDirectory, maps) {
     if (process.env.EMIT_GPU_REPRO_MAP !== "true") {
         return undefined;
     }
@@ -35,10 +52,19 @@ async function emitGpuReproMap(outputDirectory, maps) {
         throw new Error("Cannot emit GPU repro map: dist/shuttlebay.tmj was not found.");
     }
 
-    const targetPath = path.join(outputDirectory, GPU_REPRO_MAP_NAME);
-    await fs.copyFile(sourcePath, targetPath);
-    console.log(`GPU renderer repro map captured before compatibility processing: ${GPU_REPRO_MAP_NAME}`);
-    return targetPath;
+    const rawMap = JSON.parse(await fs.readFile(sourcePath, "utf8"));
+    const layerNames = getDepthLayerNames(rawMap);
+    const paths = {
+        fullGpu: path.join(outputDirectory, GPU_REPRO_MAP_NAME),
+        backgroundClassic: path.join(outputDirectory, BACKGROUND_CLASSIC_REPRO_MAP_NAME),
+        foregroundClassic: path.join(outputDirectory, FOREGROUND_CLASSIC_REPRO_MAP_NAME),
+    };
+
+    await Promise.all(Object.values(paths).map((targetPath) => fs.copyFile(sourcePath, targetPath)));
+    console.log(`GPU renderer repro maps captured before compatibility processing: ${Object.values(paths)
+        .map((targetPath) => path.basename(targetPath))
+        .join(", ")}`);
+    return { ...paths, layerNames };
 }
 
 function* walkTileLayers(layers) {
@@ -149,7 +175,7 @@ function chooseCandidate(tileset, cells) {
     return undefined;
 }
 
-async function processMap(mapPath) {
+async function processMap(mapPath, shouldProcessLayer = () => true) {
     const mapDirectory = path.dirname(mapPath);
     const map = JSON.parse(await fs.readFile(mapPath, "utf8"));
 
@@ -164,6 +190,9 @@ async function processMap(mapPath) {
     const pending = [];
 
     for (const layer of walkTileLayers(map.layers)) {
+        if (!shouldProcessLayer(layer)) {
+            continue;
+        }
         const cells = getLayerCells(layer);
         if (cells.length < 2) {
             continue;
@@ -261,11 +290,29 @@ async function processMap(mapPath) {
 async function main() {
     const outputDirectory = path.resolve(process.argv[2] ?? "dist");
     const maps = await findMaps(outputDirectory);
-    const gpuReproMap = await emitGpuReproMap(outputDirectory, maps);
+    const gpuReproMaps = await emitGpuReproMaps(outputDirectory, maps);
     let processedMaps = 0;
     let processedLayers = 0;
 
-    for (const mapPath of maps.filter((mapPath) => mapPath !== gpuReproMap).sort()) {
+    if (gpuReproMaps) {
+        const backgroundResult = await processMap(gpuReproMaps.backgroundClassic, (layer) =>
+            gpuReproMaps.layerNames.background.has(layer.name),
+        );
+        const foregroundResult = await processMap(gpuReproMaps.foregroundClassic, (layer) =>
+            gpuReproMaps.layerNames.foreground.has(layer.name),
+        );
+        console.log(
+            `GPU split repro maps prepared: background classic (${backgroundResult.layers} layers), foreground classic (${foregroundResult.layers} layers).`,
+        );
+    }
+
+    const gpuReproPaths = new Set(
+        gpuReproMaps
+            ? [gpuReproMaps.fullGpu, gpuReproMaps.backgroundClassic, gpuReproMaps.foregroundClassic]
+            : [],
+    );
+
+    for (const mapPath of maps.filter((mapPath) => !gpuReproPaths.has(mapPath)).sort()) {
         const result = await processMap(mapPath);
         const relativePath = path.relative(outputDirectory, mapPath);
         if (result.status === "processed") {
