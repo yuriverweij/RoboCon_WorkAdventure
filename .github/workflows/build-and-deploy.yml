@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch: # allow manual execution
+  workflow_dispatch:
+    inputs:
+      emit_gpu_repro:
+        description: "Also upload an unmodified optimized shuttlebay GPU repro map"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -30,6 +36,8 @@ jobs:
 
       - name: Build project
         run: npm run buildmap
+        env:
+          EMIT_GPU_REPRO_MAP: ${{ inputs.emit_gpu_repro || 'false' }}
 
       - name: Extract UPLOAD_MODE from .env
         run: |

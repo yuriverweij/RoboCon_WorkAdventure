@@ -7,6 +7,7 @@ const TILE_SIZE = 16;
 const GID_MASK = 0x1fffffff;
 const FLIP_MASK = 0xe0000000;
 const FALLBACK_TILESET_NAME = "16px classic renderer compatibility";
+const GPU_REPRO_MAP_NAME = "shuttlebay-gpu-repro.tmj";
 
 async function findMaps(directory) {
     const maps = [];
@@ -19,6 +20,25 @@ async function findMaps(directory) {
         }
     }
     return maps;
+}
+
+async function emitGpuReproMap(outputDirectory, maps) {
+    if (process.env.EMIT_GPU_REPRO_MAP !== "true") {
+        return undefined;
+    }
+
+    const sourcePath = maps.find(
+        (mapPath) =>
+            path.dirname(mapPath) === outputDirectory && path.basename(mapPath).toLowerCase() === "shuttlebay.tmj",
+    );
+    if (!sourcePath) {
+        throw new Error("Cannot emit GPU repro map: dist/shuttlebay.tmj was not found.");
+    }
+
+    const targetPath = path.join(outputDirectory, GPU_REPRO_MAP_NAME);
+    await fs.copyFile(sourcePath, targetPath);
+    console.log(`GPU renderer repro map captured before compatibility processing: ${GPU_REPRO_MAP_NAME}`);
+    return targetPath;
 }
 
 function* walkTileLayers(layers) {
@@ -241,10 +261,11 @@ async function processMap(mapPath) {
 async function main() {
     const outputDirectory = path.resolve(process.argv[2] ?? "dist");
     const maps = await findMaps(outputDirectory);
+    const gpuReproMap = await emitGpuReproMap(outputDirectory, maps);
     let processedMaps = 0;
     let processedLayers = 0;
 
-    for (const mapPath of maps.sort()) {
+    for (const mapPath of maps.filter((mapPath) => mapPath !== gpuReproMap).sort()) {
         const result = await processMap(mapPath);
         const relativePath = path.relative(outputDirectory, mapPath);
         if (result.status === "processed") {
