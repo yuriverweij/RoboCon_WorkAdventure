@@ -39,6 +39,10 @@ function getDepthLayerNames(map) {
     return { background, foreground };
 }
 
+function layerNameSlug(layerName) {
+    return layerName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 async function emitGpuReproMaps(outputDirectory, maps) {
     if (process.env.EMIT_GPU_REPRO_MAP !== "true") {
         return undefined;
@@ -59,12 +63,19 @@ async function emitGpuReproMaps(outputDirectory, maps) {
         backgroundClassic: path.join(outputDirectory, BACKGROUND_CLASSIC_REPRO_MAP_NAME),
         foregroundClassic: path.join(outputDirectory, FOREGROUND_CLASSIC_REPRO_MAP_NAME),
     };
+    const backgroundGpuOnly = new Map(
+        [...layerNames.background].map((layerName) => [
+            layerName,
+            path.join(outputDirectory, `shuttlebay-gpu-only-${layerNameSlug(layerName)}.tmj`),
+        ]),
+    );
+    const allTargetPaths = [...Object.values(paths), ...backgroundGpuOnly.values()];
 
-    await Promise.all(Object.values(paths).map((targetPath) => fs.copyFile(sourcePath, targetPath)));
-    console.log(`GPU renderer repro maps captured before compatibility processing: ${Object.values(paths)
+    await Promise.all(allTargetPaths.map((targetPath) => fs.copyFile(sourcePath, targetPath)));
+    console.log(`GPU renderer repro maps captured before compatibility processing: ${allTargetPaths
         .map((targetPath) => path.basename(targetPath))
         .join(", ")}`);
-    return { ...paths, layerNames };
+    return { ...paths, backgroundGpuOnly, layerNames };
 }
 
 function* walkTileLayers(layers) {
@@ -304,11 +315,21 @@ async function main() {
         console.log(
             `GPU split repro maps prepared: background classic (${backgroundResult.layers} layers), foreground classic (${foregroundResult.layers} layers).`,
         );
+
+        for (const [gpuLayerName, mapPath] of gpuReproMaps.backgroundGpuOnly) {
+            const result = await processMap(mapPath, (layer) => layer.name !== gpuLayerName);
+            console.log(`GPU-only repro map prepared for layer "${gpuLayerName}" (${result.layers} classic layers).`);
+        }
     }
 
     const gpuReproPaths = new Set(
         gpuReproMaps
-            ? [gpuReproMaps.fullGpu, gpuReproMaps.backgroundClassic, gpuReproMaps.foregroundClassic]
+            ? [
+                  gpuReproMaps.fullGpu,
+                  gpuReproMaps.backgroundClassic,
+                  gpuReproMaps.foregroundClassic,
+                  ...gpuReproMaps.backgroundGpuOnly.values(),
+              ]
             : [],
     );
 
