@@ -260119,6 +260119,23 @@
   "nextlayerid": 24,
   "nextobjectid": 1,
   "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "mapDescription",
+      "type": "string",
+      "value": "The main stage and auditorium for RoboCon talks and presentations."
+    },
+    {
+      "name": "mapImage",
+      "type": "string",
+      "value": "previews/MainConference.png"
+    },
+    {
+      "name": "mapName",
+      "type": "string",
+      "value": "RoboCon 2026 - Main Conference"
+    }
+  ],
   "renderorder": "right-down",
   "tiledversion": "1.11.0",
   "tileheight": 16,

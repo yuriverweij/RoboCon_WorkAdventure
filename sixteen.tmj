@@ -500,6 +500,22 @@
  "nextlayerid":10,
  "nextobjectid":1,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"mapDescription",
+         "type":"string",
+         "value":"A compact 16-pixel room in the RoboCon 2026 virtual venue."
+        },
+        {
+         "name":"mapImage",
+         "type":"string",
+         "value":"previews\/sixteen.png"
+        },
+        {
+         "name":"mapName",
+         "type":"string",
+         "value":"RoboCon 2026 - Sixteen"
+        }],
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
  "tileheight":16,

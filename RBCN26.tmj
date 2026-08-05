@@ -3427,6 +3427,22 @@
  "nextlayerid":40,
  "nextobjectid":1,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"mapDescription",
+         "type":"string",
+         "value":"The central RoboCon 2026 hall connecting the virtual venue's rooms and event areas."
+        },
+        {
+         "name":"mapImage",
+         "type":"string",
+         "value":"previews\/RBCN26.png"
+        },
+        {
+         "name":"mapName",
+         "type":"string",
+         "value":"RoboCon 2026 - Event Hall"
+        }],
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
  "tileheight":16,

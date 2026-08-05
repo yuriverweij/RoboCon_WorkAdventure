@@ -191811,6 +191811,23 @@
   "nextlayerid": 30,
   "nextobjectid": 1,
   "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "mapDescription",
+      "type": "string",
+      "value": "The RoboCon photo area for taking and sharing virtual selfies."
+    },
+    {
+      "name": "mapImage",
+      "type": "string",
+      "value": "previews/SelfieRoom26.png"
+    },
+    {
+      "name": "mapName",
+      "type": "string",
+      "value": "RoboCon 2026 - Selfie Room"
+    }
+  ],
   "renderorder": "right-down",
   "tiledversion": "1.11.2",
   "tileheight": 16,

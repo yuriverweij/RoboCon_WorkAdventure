@@ -119995,6 +119995,23 @@
   "nextlayerid": 18,
   "nextobjectid": 1,
   "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "mapDescription",
+      "type": "string",
+      "value": "A social space to meet, relax, and network between RoboCon sessions."
+    },
+    {
+      "name": "mapImage",
+      "type": "string",
+      "value": "previews/RobotBar.png"
+    },
+    {
+      "name": "mapName",
+      "type": "string",
+      "value": "RoboCon 2026 - Robot Bar"
+    }
+  ],
   "renderorder": "right-down",
   "tiledversion": "1.4.3",
   "tileheight": 16,

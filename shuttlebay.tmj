@@ -1688,6 +1688,22 @@
  "nextlayerid":19,
  "nextobjectid":5,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"mapDescription",
+         "type":"string",
+         "value":"The arrival area and entrance to the RoboCon 2026 virtual venue."
+        },
+        {
+         "name":"mapImage",
+         "type":"string",
+         "value":"previews\/shuttlebay.png"
+        },
+        {
+         "name":"mapName",
+         "type":"string",
+         "value":"RoboCon 2026 - Shuttle Bay"
+        }],
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
  "tileheight":16,

@@ -184302,6 +184302,23 @@
   "nextlayerid": 18,
   "nextobjectid": 1,
   "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "mapDescription",
+      "type": "string",
+      "value": "Breakout spaces for smaller RoboCon sessions and conversations."
+    },
+    {
+      "name": "mapImage",
+      "type": "string",
+      "value": "previews/breakoutZone.png"
+    },
+    {
+      "name": "mapName",
+      "type": "string",
+      "value": "RoboCon 2026 - Breakout Zone"
+    }
+  ],
   "renderorder": "right-down",
   "tiledversion": "1.11.0",
   "tileheight": 16,

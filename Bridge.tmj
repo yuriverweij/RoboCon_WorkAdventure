@@ -27441,6 +27441,23 @@
   "nextlayerid": 16,
   "nextobjectid": 1,
   "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "mapDescription",
+      "type": "string",
+      "value": "The bridge and networking area of the RoboCon virtual venue."
+    },
+    {
+      "name": "mapImage",
+      "type": "string",
+      "value": "previews/Bridge.png"
+    },
+    {
+      "name": "mapName",
+      "type": "string",
+      "value": "RoboCon 2026 - Bridge"
+    }
+  ],
   "renderorder": "right-down",
   "tiledversion": "1.4.3",
   "tileheight": 16,

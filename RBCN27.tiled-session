@@ -3,15 +3,82 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "shuttlebay.tmj",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
+        "shuttlebay.tmj": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 789.5,
+                "y": 1431
+            }
+        },
+        "shuttlebay.tmj#!doors1": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#CONFHALL": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#OCRA": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#OCRA_numbers": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#OCR_Black": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Paralax": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#RFLogo_smaller": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#RoboConLogo": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Sci Fi 5": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Sci Fi 6": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Sci Fi Maxiset": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Sci Fi Wall Tiles 1": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Sci Fi Wall Tiles 2": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Sci Fi Wall Tiles 3": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Shadow": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#Shuttle": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#WA_Special_Zones": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#arrows": {
+            "scaleInDock": 1
+        },
+        "shuttlebay.tmj#stuff": {
+            "scaleInDock": 1
+        }
     },
     "openFiles": [
+        "shuttlebay.tmj"
     ],
     "project": "RBCN27.tiled-project",
     "recentFiles": [
+        "shuttlebay.tmj"
     ]
 }
