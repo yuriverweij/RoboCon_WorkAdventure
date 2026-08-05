@@ -7,6 +7,7 @@
     "start": "npm run dev",
     "dev": "vite --config web.vite.config.ts",
     "buildmap": "tsc && vite build --config buildmap.vite.config.ts",
+    "postbuildmap": "node scripts/force-classic-renderer-16px.mjs dist",
     "preview": "vite preview --config buildmap.vite.config.ts --outDir dist",
     "upload": "npm run buildmap && upload-wa-map",
     "upload-only": "upload-wa-map"
@@ -20,6 +21,7 @@
     "@workadventure/upload-maps": "^1.7.4",
     "dotenv": "^16.3.1",
     "express": "^5.2.1",
+    "sharp": "^0.30.7",
     "typescript": "^5.9.2",
     "vite": "^7.3.0",
     "vite-plugin-node": "^7.0.0"
