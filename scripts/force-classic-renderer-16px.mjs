@@ -8,8 +8,7 @@ const GID_MASK = 0x1fffffff;
 const FLIP_MASK = 0xe0000000;
 const FALLBACK_TILESET_NAME = "16px classic renderer compatibility";
 const GPU_REPRO_MAP_NAME = "shuttlebay-gpu-repro.tmj";
-const BACKGROUND_CLASSIC_REPRO_MAP_NAME = "shuttlebay-bg-classic-fg-gpu.tmj";
-const FOREGROUND_CLASSIC_REPRO_MAP_NAME = "shuttlebay-bg-gpu-fg-classic.tmj";
+const LOWEST_ROBOT_LOGO_REPRO_MAP_NAME = "shuttlebay-gpu-only-lowest-robot-logo.tmj";
 
 async function findMaps(directory) {
     const maps = [];
@@ -24,23 +23,18 @@ async function findMaps(directory) {
     return maps;
 }
 
-function getDepthLayerNames(map) {
-    const background = new Set();
-    const foreground = new Set();
-    let target = background;
-
-    for (const layer of map.layers ?? []) {
-        if (layer.type === "objectgroup" && layer.name === "floorLayer") {
-            target = foreground;
-        } else if (layer.type === "tilelayer") {
-            target.add(layer.name);
-        }
+function retainLowestRobotLogo(map) {
+    const layer = map.layers?.find((candidate) => candidate.type === "tilelayer" && candidate.name === "Way Finding");
+    if (!layer || !Array.isArray(layer.data)) {
+        throw new Error('Cannot emit lowest-robot-logo repro map: tile layer "Way Finding" was not found.');
     }
-    return { background, foreground };
-}
 
-function layerNameSlug(layerName) {
-    return layerName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    // The lowest RoboCon robot logo is the 6x6 tile block at x=37..42, y=90..95.
+    layer.data = layer.data.map((gid, index) => {
+        const x = index % layer.width;
+        const y = Math.floor(index / layer.width);
+        return x >= 37 && x <= 42 && y >= 90 && y <= 95 ? gid : 0;
+    });
 }
 
 async function emitGpuReproMaps(outputDirectory, maps) {
@@ -57,25 +51,20 @@ async function emitGpuReproMaps(outputDirectory, maps) {
     }
 
     const rawMap = JSON.parse(await fs.readFile(sourcePath, "utf8"));
-    const layerNames = getDepthLayerNames(rawMap);
     const paths = {
         fullGpu: path.join(outputDirectory, GPU_REPRO_MAP_NAME),
-        backgroundClassic: path.join(outputDirectory, BACKGROUND_CLASSIC_REPRO_MAP_NAME),
-        foregroundClassic: path.join(outputDirectory, FOREGROUND_CLASSIC_REPRO_MAP_NAME),
+        lowestRobotLogo: path.join(outputDirectory, LOWEST_ROBOT_LOGO_REPRO_MAP_NAME),
     };
-    const backgroundGpuOnly = new Map(
-        [...layerNames.background].map((layerName) => [
-            layerName,
-            path.join(outputDirectory, `shuttlebay-gpu-only-${layerNameSlug(layerName)}.tmj`),
-        ]),
-    );
-    const allTargetPaths = [...Object.values(paths), ...backgroundGpuOnly.values()];
+    const allTargetPaths = Object.values(paths);
 
     await Promise.all(allTargetPaths.map((targetPath) => fs.copyFile(sourcePath, targetPath)));
+    const lowestRobotLogoMap = structuredClone(rawMap);
+    retainLowestRobotLogo(lowestRobotLogoMap);
+    await fs.writeFile(paths.lowestRobotLogo, `${JSON.stringify(lowestRobotLogoMap, null, 2)}\n`, "utf8");
     console.log(`GPU renderer repro maps captured before compatibility processing: ${allTargetPaths
         .map((targetPath) => path.basename(targetPath))
         .join(", ")}`);
-    return { ...paths, backgroundGpuOnly, layerNames };
+    return paths;
 }
 
 function* walkTileLayers(layers) {
@@ -306,31 +295,17 @@ async function main() {
     let processedLayers = 0;
 
     if (gpuReproMaps) {
-        const backgroundResult = await processMap(gpuReproMaps.backgroundClassic, (layer) =>
-            gpuReproMaps.layerNames.background.has(layer.name),
-        );
-        const foregroundResult = await processMap(gpuReproMaps.foregroundClassic, (layer) =>
-            gpuReproMaps.layerNames.foreground.has(layer.name),
+        const lowestRobotLogoResult = await processMap(
+            gpuReproMaps.lowestRobotLogo,
+            (layer) => layer.name !== "Way Finding",
         );
         console.log(
-            `GPU split repro maps prepared: background classic (${backgroundResult.layers} layers), foreground classic (${foregroundResult.layers} layers).`,
+            `Minimal GPU repro map prepared: lowest robot logo only (${lowestRobotLogoResult.layers} classic layers).`,
         );
-
-        for (const [gpuLayerName, mapPath] of gpuReproMaps.backgroundGpuOnly) {
-            const result = await processMap(mapPath, (layer) => layer.name !== gpuLayerName);
-            console.log(`GPU-only repro map prepared for layer "${gpuLayerName}" (${result.layers} classic layers).`);
-        }
     }
 
     const gpuReproPaths = new Set(
-        gpuReproMaps
-            ? [
-                  gpuReproMaps.fullGpu,
-                  gpuReproMaps.backgroundClassic,
-                  gpuReproMaps.foregroundClassic,
-                  ...gpuReproMaps.backgroundGpuOnly.values(),
-              ]
-            : [],
+        gpuReproMaps ? [gpuReproMaps.fullGpu, gpuReproMaps.lowestRobotLogo] : [],
     );
 
     for (const mapPath of maps.filter((mapPath) => !gpuReproPaths.has(mapPath)).sort()) {
